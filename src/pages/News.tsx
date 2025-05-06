@@ -92,7 +92,7 @@ const News: React.FC = () => {
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="news">News</SelectItem>
                   <SelectItem value="blog">Blog</SelectItem>
                 </SelectContent>
