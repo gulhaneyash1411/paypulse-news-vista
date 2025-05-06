@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { 
   ChartBar, 
   ChartPie, 
-  Dashboard 
+  LayoutDashboard 
 } from "lucide-react";
 
 interface SidebarProps {
@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     {
       name: 'Dashboard',
       path: '/',
-      icon: <Dashboard size={20} />,
+      icon: <LayoutDashboard size={20} />,
     },
     {
       name: 'News',
