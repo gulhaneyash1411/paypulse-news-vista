@@ -40,15 +40,6 @@ const Navbar: React.FC<NavbarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           </Link>
         </div>
         
-        <div className="hidden md:flex items-center bg-gray-100 rounded-md relative max-w-md w-full mx-4">
-          <Search size={18} className="absolute left-2 text-gray-500" />
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="pl-8 pr-4 py-1.5 w-full bg-transparent border-none focus:outline-none focus:ring-0" 
-          />
-        </div>
-        
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

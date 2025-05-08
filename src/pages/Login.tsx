@@ -223,12 +223,6 @@ const Login: React.FC = () => {
             </TabsContent>
           </Tabs>
         </Card>
-        
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <p>For demo purposes, you can use:</p>
-          <p>Email: user@example.com</p>
-          <p>Password: password123</p>
-        </div>
       </div>
     </div>
   );
