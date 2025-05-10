@@ -46,8 +46,21 @@ export const PayoutProvider: React.FC<PayoutProviderProps> = ({ children }) => {
   }, []);
   
   const updateRates = (rates: PayoutRate) => {
-    setPayoutRates(rates);
-    localStorage.setItem('paypulse_payout_rates', JSON.stringify(rates));
+    // Validate rates to ensure they're valid numbers
+    if (typeof rates.newsRate !== 'number' || typeof rates.blogRate !== 'number' || 
+        isNaN(rates.newsRate) || isNaN(rates.blogRate)) {
+      toast.error('Invalid payout rates provided');
+      return;
+    }
+    
+    // Ensure rates are positive
+    const validRates = {
+      newsRate: Math.max(0, rates.newsRate),
+      blogRate: Math.max(0, rates.blogRate)
+    };
+    
+    setPayoutRates(validRates);
+    localStorage.setItem('paypulse_payout_rates', JSON.stringify(validRates));
     toast.success('Payout rates updated successfully');
   };
   

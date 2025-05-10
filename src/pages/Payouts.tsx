@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,24 @@ const Payouts: React.FC = () => {
   const [newsRate, setNewsRate] = useState<number>(payoutRates.newsRate);
   const [blogRate, setBlogRate] = useState<number>(payoutRates.blogRate);
   
+  // Update local state when context rates change
+  useEffect(() => {
+    setNewsRate(payoutRates.newsRate);
+    setBlogRate(payoutRates.blogRate);
+  }, [payoutRates]);
+  
   const payoutData = calculatePayouts(filteredArticles);
   const totalPayout = payoutData.reduce((sum, item) => sum + item.totalAmount, 0);
   
   const handleSaveRates = () => {
-    updateRates({ newsRate, blogRate });
+    // Convert to numbers to ensure proper typing
+    const newNewsRate = Number(newsRate);
+    const newBlogRate = Number(blogRate);
+    
+    updateRates({ 
+      newsRate: newNewsRate, 
+      blogRate: newBlogRate 
+    });
   };
   
   const handleExport = (format: 'pdf' | 'csv') => {
