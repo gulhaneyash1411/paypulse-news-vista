@@ -4,9 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { usePayout, PayoutData } from '../context/PayoutContext';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { usePayout, PayoutData, DateRange } from '../context/PayoutContext';
 import { useNews } from '../context/NewsContext';
-import { ChartPie, Download, FileX } from "lucide-react";
+import { CalendarIcon, ChartPie, Download, FileX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +18,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Payouts: React.FC = () => {
-  const { payoutRates, updateRates, calculatePayouts, exportPayouts } = usePayout();
+  const { payoutRates, updateRates, calculatePayouts, exportPayouts, dateRange, setDateRange } = usePayout();
   const { filteredArticles } = useNews();
   
   const [newsRate, setNewsRate] = useState<number>(payoutRates.newsRate);
   const [blogRate, setBlogRate] = useState<number>(payoutRates.blogRate);
+  const [date, setDate] = useState<DateRange | undefined>(dateRange || undefined);
   
   // Update local state when context rates change
   useEffect(() => {
@@ -27,7 +31,8 @@ const Payouts: React.FC = () => {
     setBlogRate(payoutRates.blogRate);
   }, [payoutRates]);
   
-  const payoutData = calculatePayouts(filteredArticles);
+  // Apply date filter to payouts calculation
+  const payoutData = calculatePayouts(filteredArticles, date || undefined);
   const totalPayout = payoutData.reduce((sum, item) => sum + item.totalAmount, 0);
   
   const handleSaveRates = () => {
@@ -43,6 +48,12 @@ const Payouts: React.FC = () => {
   
   const handleExport = (format: 'pdf' | 'csv') => {
     exportPayouts(format);
+  };
+  
+  // Update both local state and context when date changes
+  const handleDateChange = (newDateRange: DateRange | undefined) => {
+    setDate(newDateRange);
+    setDateRange(newDateRange || null);
   };
   
   return (
@@ -90,6 +101,49 @@ const Payouts: React.FC = () => {
               <Button onClick={handleSaveRates} className="w-full">
                 Save Rates
               </Button>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Payment Period</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date?.from ? (
+                        date.to ? (
+                          <>
+                            {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(date.from, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>All time</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="range"
+                      selected={date}
+                      onSelect={handleDateChange}
+                      initialFocus
+                    />
+                    <div className="p-3 border-t border-border">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleDateChange(undefined)}
+                        className="w-full"
+                      >
+                        Clear Range
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -100,7 +154,13 @@ const Payouts: React.FC = () => {
               <div>
                 <CardTitle>Payout Summary</CardTitle>
                 <CardDescription>
-                  Total Payout: ${totalPayout.toFixed(2)} for {filteredArticles.length} articles
+                  {date ? (
+                    <>
+                      Period: {format(date.from, "LLL dd, y")} - {format(date.to || date.from, "LLL dd, y")}
+                      <br />
+                    </>
+                  ) : null}
+                  Total Payout: ${totalPayout.toFixed(2)} for {payoutData.reduce((sum, item) => sum + item.newsCount + item.blogCount, 0)} articles
                 </CardDescription>
               </div>
               <DropdownMenu>

@@ -11,8 +11,15 @@ interface PayoutRate {
 interface PayoutContextType {
   payoutRates: PayoutRate;
   updateRates: (rates: PayoutRate) => void;
-  calculatePayouts: (articles: NewsArticle[]) => PayoutData[];
+  calculatePayouts: (articles: NewsArticle[], dateRange?: DateRange) => PayoutData[];
   exportPayouts: (format: 'pdf' | 'csv') => void;
+  dateRange: DateRange | null;
+  setDateRange: (range: DateRange | null) => void;
+}
+
+export interface DateRange {
+  from: Date;
+  to: Date;
 }
 
 export interface PayoutData {
@@ -32,6 +39,7 @@ interface PayoutProviderProps {
 
 export const PayoutProvider: React.FC<PayoutProviderProps> = ({ children }) => {
   const [payoutRates, setPayoutRates] = useState<PayoutRate>({ newsRate: 10, blogRate: 15 });
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
   
   useEffect(() => {
     // Load saved rates from localStorage if available
@@ -64,11 +72,27 @@ export const PayoutProvider: React.FC<PayoutProviderProps> = ({ children }) => {
     toast.success('Payout rates updated successfully');
   };
   
-  const calculatePayouts = (articles: NewsArticle[]): PayoutData[] => {
+  const calculatePayouts = (articles: NewsArticle[], range?: DateRange): PayoutData[] => {
+    // Filter articles by date range if provided
+    let filteredArticles = articles;
+    
+    if (range) {
+      const fromDate = new Date(range.from);
+      fromDate.setHours(0, 0, 0, 0);
+      
+      const toDate = new Date(range.to);
+      toDate.setHours(23, 59, 59, 999);
+      
+      filteredArticles = articles.filter(article => {
+        const articleDate = new Date(article.date);
+        return articleDate >= fromDate && articleDate <= toDate;
+      });
+    }
+    
     const authorMap = new Map<string, { newsCount: number; blogCount: number }>();
     
     // Count articles by author and type
-    articles.forEach(article => {
+    filteredArticles.forEach(article => {
       const authorData = authorMap.get(article.author) || { newsCount: 0, blogCount: 0 };
       
       if (article.type === 'news') {
@@ -113,7 +137,9 @@ export const PayoutProvider: React.FC<PayoutProviderProps> = ({ children }) => {
       payoutRates, 
       updateRates,
       calculatePayouts,
-      exportPayouts
+      exportPayouts,
+      dateRange,
+      setDateRange
     }}>
       {children}
     </PayoutContext.Provider>
